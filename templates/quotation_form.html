@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if quotation else 'New' }} Quotation{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ 'Edit Quotation ' + quotation.quotation_no if quotation else 'New Quotation' }}</h1>
+</div>
+
+<form method="post" id="quotation-form">
+    <div class="card">
+        <h2>Customer</h2>
+        <div class="grid grid-2">
+            <div class="field">
+                <label>Customer</label>
+                <select name="customer_id" id="customer_id" required>
+                    <option value="">-- Select customer --</option>
+                    {% for c in customers %}
+                    <option value="{{ c.id }}"
+                        data-address="{{ c.address }}" data-gst="{{ c.gst_no }}"
+                        data-attention="{{ c.kind_attention }}" data-email="{{ c.email }}"
+                        {% if quotation and quotation.customer_id==c.id %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <p class="small muted" style="margin-top:4px;">
+                    Don't see them? <a href="{{ url_for('main.new_customer', next=request.path) }}">Add a new customer</a>
+                </p>
+            </div>
+            <div class="field">
+                <label>Your inquiry ref. (verbal / mail / tender, dated)</label>
+                <input type="text" name="inquiry_ref" value="{{ quotation.inquiry_ref if quotation else '' }}">
+            </div>
+            <div class="field">
+                <label>Kind Attention</label>
+                <input type="text" name="kind_attention" id="kind_attention" value="{{ quotation.kind_attention if quotation else '' }}">
+            </div>
+            <div class="field">
+                <label>Customer Email</label>
+                <input type="email" name="email" id="cust_email" value="{{ quotation.email if quotation else '' }}">
+            </div>
+            <div class="field">
+                <label>Customer GST No.</label>
+                <input type="text" name="customer_gst_no" id="cust_gst" value="{{ quotation.customer_gst_no if quotation else '' }}">
+            </div>
+            <div class="field">
+                <label>HSN Code</label>
+                <input type="text" name="hsn_code" value="{{ quotation.hsn_code if quotation else '' }}">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="page-header" style="margin-bottom:10px;">
+            <div>
+                <h2 style="margin:0;">Spare Part List</h2>
+                <div class="field" style="margin-top:8px;margin-bottom:0;max-width:420px;">
+                    <label>List title (shown above the table, e.g. "...for Rectifier panel -")</label>
+                    <input type="text" name="items_list_title" value="{{ quotation.items_list_title if quotation else 'Recommended Spare Part List' }}">
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline" id="add-row" style="align-self:flex-start;">+ Add line</button>
+        </div>
+        <table id="items-table">
+            <thead>
+                <tr>
+                    <th style="width:32px;">Sr</th>
+                    <th>Customer Requirement / Item search</th>
+                    <th style="width:90px;">SQL Code</th>
+                    <th style="width:70px;">Qty</th>
+                    <th style="width:80px;">Unit</th>
+                    <th style="width:110px;">Unit Price</th>
+                    <th style="width:80px;">Currency</th>
+                    <th style="width:100px;">Total</th>
+                    <th style="width:24px;"></th>
+                </tr>
+            </thead>
+            <tbody id="items-body"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Charges &amp; Tax</h2>
+        <div class="grid grid-4">
+            <div class="field">
+                <label>Freight Charges</label>
+                <input type="number" step="0.01" name="freight_charges" id="freight_charges" value="{{ quotation.freight_charges if quotation else 0 }}">
+            </div>
+            <div class="field">
+                <label>Tax Type</label>
+                <select name="tax_type" id="tax_type">
+                    <option value="CGST_SGST" {% if quotation and quotation.tax_type=='CGST_SGST' %}selected{% endif %}>CGST + SGST (intra-state)</option>
+                    <option value="IGST" {% if quotation and quotation.tax_type=='IGST' %}selected{% endif %}>IGST (out-of-state)</option>
+                    <option value="NONE" {% if quotation and quotation.tax_type=='NONE' %}selected{% endif %}>No Tax</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Total GST %</label>
+                <input type="number" step="0.01" name="tax_percent" id="tax_percent" value="{{ quotation.tax_percent if quotation else 18 }}">
+            </div>
+        </div>
+        <div class="totals-box">
+            <div class="row"><span>Total</span><span id="t-subtotal">0.00</span></div>
+            <div class="row"><span>Freight Charges</span><span id="t-freight">0.00</span></div>
+            <div class="row"><span>Total Amount</span><span id="t-beforetax">0.00</span></div>
+            <div class="row"><span id="t-taxlabel">Tax</span><span id="t-tax">0.00</span></div>
+            <div class="row grand"><span>Grand Total</span><span id="t-grand">0.00</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Terms &amp; Conditions</h2>
+        <div class="grid grid-2">
+            <div class="field"><label>Scope</label><textarea name="scope" rows="2">{{ quotation.scope if quotation else settings.default_scope }}</textarea></div>
+            <div class="field"><label>Taxes, Duties, etc.</label><textarea name="taxes_note" rows="2">{{ quotation.taxes_note if quotation else settings.default_taxes }}</textarea></div>
+            <div class="field"><label>Payment Terms</label><textarea name="payment_terms" rows="2">{{ quotation.payment_terms if quotation else settings.default_payment_terms }}</textarea></div>
+            <div class="field"><label>Delivery Period</label><input type="text" name="delivery_period" value="{{ quotation.delivery_period if quotation else settings.default_delivery_period }}"></div>
+            <div class="field"><label>Packing Charges</label><input type="text" name="packing_charges" value="{{ quotation.packing_charges if quotation else settings.default_packing_charges }}"></div>
+            <div class="field"><label>Warranty Terms</label><input type="text" name="warranty_terms" value="{{ quotation.warranty_terms if quotation else settings.default_warranty_terms }}"></div>
+            <div class="field"><label>Price Validity</label><input type="text" name="price_validity" value="{{ quotation.price_validity if quotation else settings.default_price_validity }}"></div>
+        </div>
+    </div>
+
+    <button class="btn" type="submit">{{ 'Save Changes' if quotation else 'Create Quotation' }}</button>
+</form>
+
+<template id="row-template">
+    <tr>
+        <td class="sr-cell"></td>
+        <td class="item-search-wrap">
+            <input type="hidden" name="sql_code[]" class="sql-code-input">
+            <input type="text" name="customer_requirement[]" class="req-input" placeholder="Type to search item master or describe requirement" autocomplete="off">
+            <div class="item-suggest"></div>
+        </td>
+        <td><input type="text" class="sql-code-display" readonly tabindex="-1"></td>
+        <td><input type="number" step="0.01" name="qty[]" class="qty-input" value="1"></td>
+        <td><input type="text" name="unit[]" class="unit-input" value="Nos."></td>
+        <td><input type="number" step="0.01" name="unit_price[]" class="price-input" value="0"></td>
+        <td>
+            <select name="currency[]" class="currency-input">
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+        </td>
+        <td><span class="row-total">0.00</span></td>
+        <td><span class="remove-row" title="Remove line">&times;</span></td>
+    </tr>
+</template>
+
+<script id="existing-items-data" type="application/json">{{ existing_items_json | safe }}</script>
+<script src="{{ url_for('static', filename='js/quotation.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ wo.wo_no }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ wo.wo_no }} <span class="badge badge-{{ wo.status.replace(' ','') }}">{{ wo.status }}</span></h1>
+    <div class="actions-bar" style="margin-bottom:0;">
+        <a class="btn btn-outline" href="{{ url_for('quotations.view_quotation', quotation_id=wo.quotation_id) }}">View Quotation</a>
+        <a class="btn" href="{{ url_for('workorders.workorder_pdf', wo_id=wo.id) }}">Download PDF</a>
+    </div>
+</div>
+
+<div class="two-col">
+    <div class="quote-doc">
+        <div class="quote-band"><strong>{{ settings.company_name }}</strong><br><span class="small">{{ settings.address_line }}</span></div>
+        <div class="quote-title">WORK ORDER</div>
+        <table class="quote-table" style="margin-bottom:10px;">
+            <tr><td><strong>Work Order No.</strong> {{ wo.wo_no }}</td><td><strong>Date:</strong> {{ wo.date.strftime('%d/%b/%Y') }}</td></tr>
+            <tr><td><strong>Against Quotation:</strong> {{ wo.quotation.quotation_no }}</td><td><strong>Customer PO:</strong> {{ wo.quotation.po_number or '-' }}</td></tr>
+            <tr><td><strong>Customer:</strong> {{ wo.quotation.customer.name }}</td><td><strong>Expected Delivery:</strong> {{ wo.expected_delivery_date.strftime('%d/%b/%Y') if wo.expected_delivery_date else '-' }}</td></tr>
+        </table>
+
+        <table class="quote-table">
+            <thead><tr><th>Sr</th><th>Item Description</th><th>SQL Code</th><th>Qty</th><th>Unit</th></tr></thead>
+            <tbody>
+            {% for it in wo.quotation.items %}
+                <tr>
+                    <td>{{ it.sr_no }}</td>
+                    <td>{{ it.customer_requirement }}</td>
+                    <td>{{ it.sql_code }}</td>
+                    <td>{{ it.qty }}</td>
+                    <td>{{ it.unit }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% if wo.remarks %}
+        <p style="margin-top:12px;"><strong>Remarks:</strong> {{ wo.remarks }}</p>
+        {% endif %}
+        <p class="small">Prepared by: {{ wo.created_by.name }}</p>
+        <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+        <p class="small"><strong>{{ settings.company_name }}</strong> &nbsp;·&nbsp; {{ settings.address_line }} &nbsp;·&nbsp; Tel: {{ settings.telephone }}</p>
+    </div>
+
+    <div>
+        <div class="card">
+            <h2>Update Status</h2>
+            <form method="post" action="{{ url_for('workorders.update_status', wo_id=wo.id) }}">
+                <select name="status">
+                    <option value="Pending" {% if wo.status=='Pending' %}selected{% endif %}>Pending</option>
+                    <option value="In Progress" {% if wo.status=='In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Dispatched" {% if wo.status=='Dispatched' %}selected{% endif %}>Dispatched</option>
+                    <option value="Completed" {% if wo.status=='Completed' %}selected{% endif %}>Completed</option>
+                </select>
+                <button class="btn" style="margin-top:10px;" type="submit">Update</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

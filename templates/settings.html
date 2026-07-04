@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Company Settings{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Company Settings</h1></div>
+<p class="muted small">These details appear on every quotation and work order PDF. Fill in your real company details here — they replace the placeholder text.</p>
+
+<form method="post" enctype="multipart/form-data">
+    <div class="two-col">
+        <div class="card">
+            <h2>Letterhead &amp; Logo</h2>
+            <div class="field">
+                <label>Company Logo</label>
+                {% if s.logo_filename %}
+                <div style="margin-bottom:8px;">
+                    <img src="{{ url_for('static', filename='uploads/' + s.logo_filename) }}" alt="Current logo" style="height:60px;border:1px solid var(--border);border-radius:6px;padding:4px;background:#fff;">
+                </div>
+                {% endif %}
+                <input type="file" name="logo" accept=".png,.jpg,.jpeg,.gif,.webp">
+                <p class="small muted" style="margin-top:4px;">Shown top-left of the letterhead band on every quotation and work order. PNG with a transparent background works best.</p>
+            </div>
+            <div class="field"><label>Company Name</label><input type="text" name="company_name" value="{{ s.company_name }}"></div>
+            <div class="field"><label>Address</label><textarea name="address_line" rows="2">{{ s.address_line }}</textarea></div>
+            <div class="field"><label>State</label><input type="text" name="state" value="{{ s.state }}"></div>
+            <div class="field"><label>GST No.</label><input type="text" name="gst_no" value="{{ s.gst_no }}"></div>
+            <div class="field"><label>PAN No.</label><input type="text" name="pan_no" value="{{ s.pan_no }}"></div>
+            <div class="field"><label>CIN No.</label><input type="text" name="cin_no" value="{{ s.cin_no }}"></div>
+            <div class="field"><label>Telephone</label><input type="text" name="telephone" value="{{ s.telephone }}"></div>
+            <div class="field"><label>Quotation number prefix</label><input type="text" name="quotation_prefix" value="{{ s.quotation_prefix }}">
+                <p class="small muted" style="margin-top:4px;">Full number looks like: {{ s.quotation_prefix }}/26-27/PNR/JUL/1</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Bank Details</h2>
+            <div class="field"><label>Bank Name</label><input type="text" name="bank_name" value="{{ s.bank_name }}"></div>
+            <div class="field"><label>Account No.</label><input type="text" name="bank_account_no" value="{{ s.bank_account_no }}"></div>
+            <div class="field"><label>IFSC Code</label><input type="text" name="bank_ifsc" value="{{ s.bank_ifsc }}"></div>
+            <div class="field"><label>Branch</label><input type="text" name="bank_branch" value="{{ s.bank_branch }}"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Default Terms &amp; Conditions</h2>
+        <p class="muted small">Pre-filled into every new quotation; can still be edited per quotation.</p>
+        <div class="grid grid-2">
+            <div class="field"><label>Scope</label><textarea name="default_scope" rows="2">{{ s.default_scope }}</textarea></div>
+            <div class="field"><label>Taxes, Duties, etc.</label><textarea name="default_taxes" rows="2">{{ s.default_taxes }}</textarea></div>
+            <div class="field"><label>Payment Terms</label><textarea name="default_payment_terms" rows="2">{{ s.default_payment_terms }}</textarea></div>
+            <div class="field"><label>Delivery Period</label><input type="text" name="default_delivery_period" value="{{ s.default_delivery_period }}"></div>
+            <div class="field"><label>Packing Charges</label><input type="text" name="default_packing_charges" value="{{ s.default_packing_charges }}"></div>
+            <div class="field"><label>Warranty Terms</label><input type="text" name="default_warranty_terms" value="{{ s.default_warranty_terms }}"></div>
+            <div class="field"><label>Price Validity</label><input type="text" name="default_price_validity" value="{{ s.default_price_validity }}"></div>
+        </div>
+    </div>
+
+    <button class="btn" type="submit">Save Settings</button>
+</form>
+{% endblock %}

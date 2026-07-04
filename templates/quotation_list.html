@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Quotations{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Quotations</h1>
+    <a class="btn" href="{{ url_for('quotations.new_quotation') }}">+ New Quotation</a>
+</div>
+
+<div class="tag-filter">
+    <a href="{{ url_for('quotations.list_quotations') }}" class="{{ 'active' if not status }}">All</a>
+    <a href="{{ url_for('quotations.list_quotations', status='Draft') }}" class="{{ 'active' if status=='Draft' }}">Draft</a>
+    <a href="{{ url_for('quotations.list_quotations', status='Sent') }}" class="{{ 'active' if status=='Sent' }}">Sent</a>
+    <a href="{{ url_for('quotations.list_quotations', status='Confirmed') }}" class="{{ 'active' if status=='Confirmed' }}">Confirmed</a>
+    <a href="{{ url_for('quotations.list_quotations', status='Rejected') }}" class="{{ 'active' if status=='Rejected' }}">Rejected</a>
+</div>
+
+<div class="card">
+    <table>
+        <thead><tr><th>Quotation No.</th><th>Date</th><th>Customer</th><th>Salesperson</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for q in quotations %}
+            <tr onclick="window.location='{{ url_for('quotations.view_quotation', quotation_id=q.id) }}'" style="cursor:pointer;">
+                <td>{{ q.quotation_no }}</td>
+                <td>{{ q.date.strftime('%d-%b-%Y') }}</td>
+                <td>{{ q.customer.name }}</td>
+                <td>{{ q.salesperson.name }}</td>
+                <td>{{ "%.2f"|format(q.grand_total) }}</td>
+                <td><span class="badge badge-{{ q.status }}">{{ q.status }}</span></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" class="muted">No quotations found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

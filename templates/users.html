@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Sales team users</h1></div>
+
+<div class="two-col">
+    <div class="card">
+        <h2>Existing users</h2>
+        <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Initials</th><th>Admin</th><th></th></tr></thead>
+            <tbody>
+            {% for u in users %}
+                <tr>
+                    <td>{{ u.name }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.initials }}</td>
+                    <td>{{ "Yes" if u.is_admin else "No" }}</td>
+                    <td>
+                        {% if u.id != current_user.id %}
+                        <form method="post" action="{{ url_for('auth.delete_user', user_id=u.id) }}" onsubmit="return confirm('Remove this user?');">
+                            <button class="btn btn-sm btn-danger" type="submit">Remove</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Add a user</h2>
+        <form method="post">
+            <div class="field"><label>Full name</label><input type="text" name="name" required></div>
+            <div class="field"><label>Email</label><input type="email" name="email" required></div>
+            <div class="field"><label>Temporary password</label><input type="text" name="password" value="changeme123" required></div>
+            <div class="field"><label>Initials (for quotation numbers)</label><input type="text" name="initials" maxlength="6" required></div>
+            <div class="field"><label>Designation</label><input type="text" name="designation"></div>
+            <div class="field"><label>Handphone</label><input type="text" name="handphone"></div>
+            <div class="field">
+                <label><input type="checkbox" name="is_admin" style="width:auto;display:inline-block;margin-right:6px;">Grant admin access</label>
+            </div>
+            <button class="btn" type="submit">Create user</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

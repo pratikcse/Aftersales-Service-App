@@ -1,0 +1,36 @@
+{% from "_icons.html" import gear %}
+{% extends "base.html" %}
+{% block title %}Initial Setup{% endblock %}
+{% block bodyclass %}auth-page{% endblock %}
+{% block content %}
+<div class="auth-shell">
+    <div class="auth-visual">
+        <div class="glow"></div>
+        <div class="brand-line">
+            {% if company and company.logo_filename %}
+            <img src="{{ url_for('static', filename='uploads/' + company.logo_filename) }}" alt="Logo">
+            {% endif %}
+            <span>{{ company.company_name if company else 'Aftersales Portal' }}</span>
+        </div>
+        <div class="icon-float">{{ gear(64) }}</div>
+        <h1>Let's get set up.</h1>
+        <p>This one-time step creates your admin account, so you can start turning inquiries into quotations, confirmations and work orders today.</p>
+    </div>
+
+    <div class="auth-form-side">
+        <div class="card">
+            <h1 style="margin-bottom:4px;">Create admin account</h1>
+            <p class="muted small" style="margin-bottom:20px;">This account can manage users, company settings, and the letterhead used on quotation PDFs.</p>
+            <form method="post">
+                <div class="field"><label>Full name</label><input type="text" name="name" required></div>
+                <div class="field"><label>Email</label><input type="email" name="email" required></div>
+                <div class="field"><label>Password</label><input type="password" name="password" required></div>
+                <div class="field"><label>Initials (used in quotation numbers, e.g. PNR)</label><input type="text" name="initials" maxlength="6" required></div>
+                <div class="field"><label>Designation</label><input type="text" name="designation" placeholder="e.g. Asst Manager QA & CS"></div>
+                <div class="field"><label>Handphone</label><input type="text" name="handphone"></div>
+                <button class="btn" type="submit" style="width:100%;">Create account &amp; continue</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

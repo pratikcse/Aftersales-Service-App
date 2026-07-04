@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Aftersales{% endblock %} · {{ company.company_name if company else 'Aftersales Portal' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% block bodyclass %}{% endblock %}">
+{% if current_user.is_authenticated %}
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="{{ url_for('main.dashboard') }}">
+            {% if company and company.logo_filename %}
+            <img src="{{ url_for('static', filename='uploads/' + company.logo_filename) }}" alt="{{ company.company_name }} logo">
+            {% endif %}
+            <span>
+                {{ company.company_name if company else 'Aftersales Portal' }}
+                <span class="brand-tagline">Aftersales Service Portal</span>
+            </span>
+        </a>
+        <nav class="mainnav">
+            <a href="{{ url_for('main.dashboard') }}" class="{{ 'active' if request.endpoint=='main.dashboard' }}">Dashboard</a>
+            <a href="{{ url_for('quotations.list_quotations') }}" class="{{ 'active' if request.blueprint=='quotations' }}">Quotations</a>
+            <a href="{{ url_for('workorders.list_workorders') }}" class="{{ 'active' if request.blueprint=='workorders' }}">Work Orders</a>
+            <a href="{{ url_for('main.customers') }}" class="{{ 'active' if request.endpoint in ['main.customers','main.new_customer'] }}">Customers</a>
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('main.settings') }}" class="{{ 'active' if request.endpoint=='main.settings' }}">Settings</a>
+            <a href="{{ url_for('auth.users') }}" class="{{ 'active' if request.endpoint=='auth.users' }}">Users</a>
+            {% endif %}
+        </nav>
+        <div class="user-menu">
+            <span>{{ current_user.name }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-link">Logout</a>
+        </div>
+    </div>
+</header>
+{% endif %}
+
+<main class="page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-wrap">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

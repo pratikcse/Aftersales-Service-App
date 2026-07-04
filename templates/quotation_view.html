@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}{{ q.quotation_no }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ q.quotation_no }} <span class="badge badge-{{ q.status }}">{{ q.status }}</span></h1>
+    <div class="actions-bar" style="margin-bottom:0;">
+        <a class="btn btn-outline" href="{{ url_for('quotations.edit_quotation', quotation_id=q.id) }}">Edit</a>
+        <a class="btn" href="{{ url_for('quotations.quotation_pdf', quotation_id=q.id) }}">Download PDF</a>
+        {% if q.status == 'Confirmed' %}
+        <a class="btn btn-success" href="{{ url_for('workorders.new_workorder', quotation_id=q.id) }}">Create Work Order</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="two-col">
+    <div>
+        <div class="quote-doc">
+            <div class="quote-band" style="display:flex;align-items:center;gap:14px;text-align:left;">
+                {% if settings.logo_filename %}
+                <img src="{{ url_for('static', filename='uploads/' + settings.logo_filename) }}" alt="Logo" style="height:50px;max-width:120px;object-fit:contain;">
+                {% endif %}
+                <div><strong>{{ settings.company_name }}</strong><br><span class="small">{{ settings.address_line }}</span></div>
+            </div>
+            <p class="small" style="text-align:center;margin:6px 0;">GST.NO: {{ settings.gst_no }}</p>
+            <div class="quote-title">QUOTATION</div>
+
+            <table class="quote-table" style="margin-bottom:10px;">
+                <tr><td><strong>Quotation No.</strong> {{ q.quotation_no }}</td><td><strong>Date:</strong> {{ q.date.strftime('%d/%b/%Y') }}</td></tr>
+            </table>
+
+            <div class="quote-box">
+                <p><strong>Customer Name &amp; Address</strong><br>{{ q.customer.name }}<br>{{ q.customer.address }}</p>
+                <p><strong>Kind Attention:</strong> {{ q.kind_attention }}</p>
+                <p><strong>Email ID:</strong> {{ q.email }}</p>
+                <p><strong>GST No.:</strong> {{ q.customer_gst_no }}</p>
+                <p class="small"><strong>Inquiry ref:</strong> {{ q.inquiry_ref }}</p>
+            </div>
+
+            <p><strong>Sub:</strong> Offer for Spares with brief description.</p>
+            <p>Dear Madam/Sir,</p>
+            <p><em>We thank you for your ref inquiry for subject equipment. We are pleased to submit our most competitive offer as below</em></p>
+            <p>Annexure/s &amp; Attachment/s: -<br>1. Price sheet.<br>2. Standard Terms &amp; Conditions<br>3. Bank Details</p>
+            <p><em>We hope our offer is in line with your requirement and shall be pleased to receive your valuable feedback.<br>Thanking You and Assuring our best services at all times</em></p>
+
+            <p>Yours Sincerely<br>
+            <strong>Name:</strong> {{ q.salesperson.name }}<br>
+            <strong>Designation:</strong> {{ q.salesperson.designation }}<br>
+            <strong>Handphone:</strong> {{ q.salesperson.handphone }}<br>
+            <strong>E-mail:</strong> {{ q.salesperson.email }}</p>
+
+            <h3>Annexure- I &nbsp;·&nbsp; {{ q.items_list_title }}</h3>
+            <table class="quote-table">
+                <thead><tr><th>Sr</th><th>Customer Requirement</th><th>SQL Code</th><th>Qty</th><th>Unit</th><th>Unit Price</th><th>Currency</th><th>Total</th></tr></thead>
+                <tbody>
+                {% for it in q.items %}
+                    <tr>
+                        <td>{{ it.sr_no }}</td>
+                        <td>{{ it.customer_requirement }}</td>
+                        <td>{{ it.sql_code }}</td>
+                        <td>{{ it.qty }}</td>
+                        <td>{{ it.unit }}</td>
+                        <td>{{ "%.2f"|format(it.unit_price) }}</td>
+                        <td>{{ it.currency }}</td>
+                        <td>{{ "%.2f"|format(it.total_price) }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% if q.hsn_code %}
+            <p class="small" style="margin-top:6px;"><strong>HSN CODE :</strong> {{ q.hsn_code }}</p>
+            {% endif %}
+
+            <div class="totals-box" style="margin-top:10px;">
+                <div class="row"><span>Total</span><span>{{ "%.2f"|format(q.subtotal) }}</span></div>
+                <div class="row"><span>Freight Charges</span><span>{{ "%.2f"|format(q.freight_charges) }}</span></div>
+                <div class="row"><span>Total Amount</span><span>{{ "%.2f"|format(q.total_before_tax) }}</span></div>
+                {% if q.tax_type == 'CGST_SGST' %}
+                <div class="row"><span>CGST {{ (q.tax_percent/2)|round(1) }}%</span><span>{{ "%.2f"|format(q.cgst_amount) }}</span></div>
+                <div class="row"><span>SGST {{ (q.tax_percent/2)|round(1) }}%</span><span>{{ "%.2f"|format(q.sgst_amount) }}</span></div>
+                {% elif q.tax_type == 'IGST' %}
+                <div class="row"><span>IGST {{ q.tax_percent|round(1) }}%</span><span>{{ "%.2f"|format(q.igst_amount) }}</span></div>
+                {% endif %}
+                <div class="row grand"><span>Grand Total</span><span>{{ "%.2f"|format(q.grand_total) }}</span></div>
+            </div>
+
+            <h3 style="margin-top:16px;">Terms &amp; Condition</h3>
+            <table class="quote-table">
+                <tr style="background:#ffff00;"><td style="width:24px;">1</td><td><strong>Scope :-</strong> {{ q.scope }}</td></tr>
+                <tr><td>2</td><td><strong>Taxes, Duties, etc. :-</strong> {{ q.taxes_note }}</td></tr>
+                <tr style="background:#ffff00;"><td>3</td><td><strong>Payment Terms :-</strong> {{ q.payment_terms }}</td></tr>
+                <tr><td>4</td><td><strong>Delivery Period :-</strong> {{ q.delivery_period }}</td></tr>
+                <tr><td>5</td><td><strong>Packing Charges :-</strong> {{ q.packing_charges }}</td></tr>
+                <tr><td>6</td><td><strong>Warranty Terms :-</strong> {{ q.warranty_terms }}</td></tr>
+                <tr><td>7</td><td><strong>Price Validity:-</strong> {{ q.price_validity }}</td></tr>
+            </table>
+
+            <h3 style="margin-top:16px;">Bank Details</h3>
+            <p class="small">{{ settings.bank_name }} &nbsp;·&nbsp; A/c No. {{ settings.bank_account_no }} &nbsp;·&nbsp; IFSC {{ settings.bank_ifsc }} &nbsp;·&nbsp; {{ settings.bank_branch }}</p>
+            <p class="small"><strong>{{ settings.company_name }}</strong> &nbsp;·&nbsp; {{ settings.address_line }}</p>
+            <p class="small">Telephone: {{ settings.telephone }} &nbsp;·&nbsp; CIN: {{ settings.cin_no }} &nbsp;·&nbsp; PAN: {{ settings.pan_no }}</p>
+        </div>
+    </div>
+
+    <div>
+        <div class="card">
+            <h2>Workflow</h2>
+            <form method="post" action="{{ url_for('quotations.update_status', quotation_id=q.id) }}" class="field">
+                <label>Status</label>
+                <select name="status" onchange="document.getElementById('po-fields').style.display = this.value==='Confirmed' ? 'block':'none';">
+                    <option value="Draft" {% if q.status=='Draft' %}selected{% endif %}>Draft</option>
+                    <option value="Sent" {% if q.status=='Sent' %}selected{% endif %}>Sent</option>
+                    <option value="Confirmed" {% if q.status=='Confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="Rejected" {% if q.status=='Rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+                <div id="po-fields" style="display:{{ 'block' if q.status=='Confirmed' else 'none' }};margin-top:10px;">
+                    <label>Customer PO Number</label>
+                    <input type="text" name="po_number" value="{{ q.po_number }}">
+                    <label style="margin-top:8px;">PO Date</label>
+                    <input type="date" name="po_date" value="{{ q.po_date.isoformat() if q.po_date else '' }}">
+                </div>
+                <button class="btn" style="margin-top:12px;" type="submit">Update Status</button>
+            </form>
+        </div>
+
+        {% if q.work_orders %}
+        <div class="card">
+            <h2>Work Orders</h2>
+            <table>
+                <thead><tr><th>No.</th><th>Status</th></tr></thead>
+                <tbody>
+                {% for wo in q.work_orders %}
+                    <tr onclick="window.location='{{ url_for('workorders.view_workorder', wo_id=wo.id) }}'" style="cursor:pointer;">
+                        <td>{{ wo.wo_no }}</td>
+                        <td><span class="badge badge-{{ wo.status.replace(' ','') }}">{{ wo.status }}</span></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <h2>Danger zone</h2>
+            <form method="post" action="{{ url_for('quotations.delete_quotation', quotation_id=q.id) }}" onsubmit="return confirm('Delete this quotation permanently?');">
+                <button class="btn btn-danger btn-sm" type="submit">Delete Quotation</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

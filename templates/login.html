@@ -1,0 +1,41 @@
+{% from "_icons.html" import wrench, gear %}
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block bodyclass %}auth-page{% endblock %}
+{% block content %}
+<div class="auth-shell">
+    <div class="auth-visual">
+        <div class="glow"></div>
+        <div class="brand-line">
+            {% if company and company.logo_filename %}
+            <img src="{{ url_for('static', filename='uploads/' + company.logo_filename) }}" alt="Logo">
+            {% endif %}
+            <span>{{ company.company_name if company else 'Aftersales Portal' }}</span>
+        </div>
+        <div class="icon-float">{{ wrench(64) }}</div>
+        <h1>Aftersales, all in one place.</h1>
+        <p>Quotations, confirmations and work orders — from first inquiry to dispatch, tracked end-to-end so nothing falls through the cracks.</p>
+    </div>
+
+    <div class="auth-form-side">
+        <div class="card">
+            <h1 style="margin-bottom:4px;">Sign in</h1>
+            <p class="muted small" style="margin-bottom:20px;">Welcome back to the {{ company.company_name if company else '' }} aftersales team.</p>
+            {% if no_users_yet %}
+            <p class="muted small">No accounts exist yet. <a href="{{ url_for('auth.setup') }}">Create the first admin account &rarr;</a></p>
+            {% endif %}
+            <form method="post">
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" name="email" required autofocus>
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" name="password" required>
+                </div>
+                <button class="btn" type="submit" style="width:100%;">Sign in</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

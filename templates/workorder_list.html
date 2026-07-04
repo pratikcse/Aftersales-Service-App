@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Work Orders{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Work Orders</h1></div>
+
+<div class="tag-filter">
+    <a href="{{ url_for('workorders.list_workorders') }}" class="{{ 'active' if not status }}">All</a>
+    <a href="{{ url_for('workorders.list_workorders', status='Pending') }}" class="{{ 'active' if status=='Pending' }}">Pending</a>
+    <a href="{{ url_for('workorders.list_workorders', status='In Progress') }}" class="{{ 'active' if status=='In Progress' }}">In Progress</a>
+    <a href="{{ url_for('workorders.list_workorders', status='Dispatched') }}" class="{{ 'active' if status=='Dispatched' }}">Dispatched</a>
+    <a href="{{ url_for('workorders.list_workorders', status='Completed') }}" class="{{ 'active' if status=='Completed' }}">Completed</a>
+</div>
+
+<div class="card">
+    <table>
+        <thead><tr><th>WO No.</th><th>Date</th><th>Customer</th><th>Against Quotation</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for wo in orders %}
+            <tr onclick="window.location='{{ url_for('workorders.view_workorder', wo_id=wo.id) }}'" style="cursor:pointer;">
+                <td>{{ wo.wo_no }}</td>
+                <td>{{ wo.date.strftime('%d-%b-%Y') }}</td>
+                <td>{{ wo.quotation.customer.name }}</td>
+                <td>{{ wo.quotation.quotation_no }}</td>
+                <td><span class="badge badge-{{ wo.status.replace(' ','') }}">{{ wo.status }}</span></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5" class="muted">No work orders yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

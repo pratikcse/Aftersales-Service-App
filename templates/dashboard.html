@@ -1,0 +1,75 @@
+{% from "_icons.html" import wrench, document, send, check_circle, truck, plus_circle %}
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="hero">
+    <div class="hero-eyebrow">{{ company.company_name if company else '' }} &nbsp;·&nbsp; Aftersales Service</div>
+    <h1>Welcome back, {{ current_user.name.split(' ')[0] }}</h1>
+    <p>Track every inquiry from quotation to confirmation to work order — all in one place, no more spreadsheets to chase.</p>
+    <a class="btn" href="{{ url_for('quotations.new_quotation') }}">{{ plus_circle(16) }} New Quotation</a>
+    <div class="hero-icon">{{ wrench(130) }}</div>
+</div>
+
+<div class="grid grid-4" style="margin-bottom:24px;">
+    <div class="stat">
+        <div class="stat-icon blue">{{ document(22) }}</div>
+        <div><div class="num">{{ stats.quotations_total }}</div><div class="label">Total Quotations</div></div>
+    </div>
+    <div class="stat">
+        <div class="stat-icon orange">{{ send(20) }}</div>
+        <div><div class="num">{{ stats.quotations_sent }}</div><div class="label">Sent / Awaiting Response</div></div>
+    </div>
+    <div class="stat">
+        <div class="stat-icon green">{{ check_circle(22) }}</div>
+        <div><div class="num">{{ stats.quotations_confirmed }}</div><div class="label">Confirmed</div></div>
+    </div>
+    <div class="stat">
+        <div class="stat-icon grey">{{ truck(22) }}</div>
+        <div><div class="num">{{ stats.work_orders_open }}</div><div class="label">Open Work Orders</div></div>
+    </div>
+</div>
+
+<div class="two-col">
+    <div class="card">
+        <h2>Recent Quotations</h2>
+        {% if recent_quotations %}
+        <table>
+            <thead><tr><th>No.</th><th>Customer</th><th>Status</th><th>Amount</th></tr></thead>
+            <tbody>
+            {% for q in recent_quotations %}
+                <tr onclick="window.location='{{ url_for('quotations.view_quotation', quotation_id=q.id) }}'" style="cursor:pointer;">
+                    <td>{{ q.quotation_no }}</td>
+                    <td>{{ q.customer.name }}</td>
+                    <td><span class="badge badge-{{ q.status }}">{{ q.status }}</span></td>
+                    <td>{{ "%.2f"|format(q.grand_total) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="muted">No quotations yet. <a href="{{ url_for('quotations.new_quotation') }}">Create the first one &rarr;</a></p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Recent Work Orders</h2>
+        {% if recent_wos %}
+        <table>
+            <thead><tr><th>No.</th><th>Customer</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for wo in recent_wos %}
+                <tr onclick="window.location='{{ url_for('workorders.view_workorder', wo_id=wo.id) }}'" style="cursor:pointer;">
+                    <td>{{ wo.wo_no }}</td>
+                    <td>{{ wo.quotation.customer.name }}</td>
+                    <td><span class="badge badge-{{ wo.status.replace(' ', '') }}">{{ wo.status }}</span></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="muted">No work orders yet. These are created from a Confirmed quotation.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
